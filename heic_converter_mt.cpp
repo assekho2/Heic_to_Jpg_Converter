@@ -17,8 +17,9 @@ Windows (MSYS2 MinGW-w64 shell, after
     g++ -std=c++17 -O2 -pthread -o heic_converter_mt.exe heic_converter_mt.cpp -lheif -ljpeg
 
 Run examples:
-  ./heic_converter_mt                          # defaults: Photos -> output, quality 90, threads = hw cores
-  ./heic_converter_mt Photos output 90 8       # explicit
+  ./heic_converter_mt                          # convert .heic files in the current directory -> ./output
+  ./heic_converter_mt ~/Pictures -q 85 -t 8    # explicit input dir, quality, threads
+  ./heic_converter_mt --help
 */
 
 #include <cstdio>
@@ -330,24 +331,69 @@ static int parse_int(const char* s, int fallback) {
     return (int)v;
 }
 
+#ifndef APP_VERSION
+#define APP_VERSION "1.0.0"
+#endif
+
+static void print_usage(const char* prog) {
+    std::printf(
+        "heic_converter_mt %s - batch HEIC to JPEG converter\n"
+        "\n"
+        "Usage: %s [options] [input_dir]\n"
+        "\n"
+        "Converts every .heic file in input_dir (default: current directory)\n"
+        "to a .jpg in the output directory, using multiple threads.\n"
+        "\n"
+        "Options:\n"
+        "  -o, --output <dir>   output directory (default: output)\n"
+        "  -q, --quality <n>    JPEG quality 1-100 (default: 90)\n"
+        "  -t, --threads <n>    worker threads (default: CPU cores)\n"
+        "  -h, --help           show this help and exit\n"
+        "  -V, --version        show version and exit\n",
+        APP_VERSION, prog);
+}
+
 int main(int argc, char** argv) {
-    const char* input_dir = "Photos";
+    const char* input_dir = ".";
     const char* output_dir = "output";
     int jpeg_quality = 90;
 
     unsigned int hw = std::thread::hardware_concurrency();
-    int threads = (hw == 0) ? 4 : (int)hw;  // M1 Air typically reports 8
+    int threads = (hw == 0) ? 4 : (int)hw;
 
-    if (argc >= 2) input_dir = argv[1];
-    if (argc >= 3) output_dir = argv[2];
-    if (argc >= 4) jpeg_quality = parse_int(argv[3], 90);
-    if (argc >= 5) threads = parse_int(argv[4], threads);
+    for (int i = 1; i < argc; i++) {
+        const char* arg = argv[i];
+        if (std::strcmp(arg, "-h") == 0 || std::strcmp(arg, "--help") == 0) {
+            print_usage(argv[0]);
+            return 0;
+        } else if (std::strcmp(arg, "-V") == 0 || std::strcmp(arg, "--version") == 0) {
+            std::printf("heic_converter_mt %s\n", APP_VERSION);
+            return 0;
+        } else if (std::strcmp(arg, "-o") == 0 || std::strcmp(arg, "--output") == 0) {
+            if (++i >= argc) { std::fprintf(stderr, "%s requires a directory argument\n", arg); return 2; }
+            output_dir = argv[i];
+        } else if (std::strcmp(arg, "-q") == 0 || std::strcmp(arg, "--quality") == 0) {
+            if (++i >= argc) { std::fprintf(stderr, "%s requires a number argument\n", arg); return 2; }
+            jpeg_quality = parse_int(argv[i], -1);
+        } else if (std::strcmp(arg, "-t") == 0 || std::strcmp(arg, "--threads") == 0) {
+            if (++i >= argc) { std::fprintf(stderr, "%s requires a number argument\n", arg); return 2; }
+            threads = parse_int(argv[i], -1);
+        } else if (arg[0] == '-' && arg[1] != '\0') {
+            std::fprintf(stderr, "Unknown option: %s (try --help)\n", arg);
+            return 2;
+        } else {
+            input_dir = arg;
+        }
+    }
 
     if (jpeg_quality < 1 || jpeg_quality > 100) {
         std::fprintf(stderr, "Invalid quality value. Use 1-100.\n");
         return 2;
     }
-    if (threads < 1) threads = 1;
+    if (threads < 1) {
+        std::fprintf(stderr, "Invalid thread count. Use a positive number.\n");
+        return 2;
+    }
 
     if (!ensure_directory(output_dir)) {
         std::fprintf(stderr, "Failed to create output directory '%s'\n", output_dir);

@@ -4,6 +4,9 @@ Photos/*
 output/*
 !output/.gitkeep
 
+# Build artifacts
+build/
+
 # Built binaries
 heic_converter
 heic_converter.exe
