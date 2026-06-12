@@ -2,6 +2,8 @@
 
 A fast, no-install command-line tool that batch-converts iPhone `.heic` photos to `.jpg`. Multithreaded, works on Windows and macOS, and the downloads are single self-contained binaries — no libraries or runtimes to install.
 
+![Terminal demo of heic_converter_mt converting a folder of HEIC photos](docs/demo.svg)
+
 ## Download
 
 Grab the latest release from the [**Releases page**](https://github.com/assekho2/Heic_to_Jpg_Converter/releases):
@@ -91,3 +93,7 @@ make static           # portable heic_converter_mt with libheif/libde265/libjpeg
 ## Releases / CI
 
 GitHub Actions builds Windows and macOS binaries on every push. Pushing a tag like `v1.1.0` builds, packages, and attaches the binaries to a GitHub Release automatically.
+
+## License
+
+[MIT](LICENSE). HEIC decoding uses [libheif](https://github.com/strukturag/libheif) and [libde265](https://github.com/strukturag/libde265); JPEG encoding uses [libjpeg-turbo](https://github.com/libjpeg-turbo/libjpeg-turbo).

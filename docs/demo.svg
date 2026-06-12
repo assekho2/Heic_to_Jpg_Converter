@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="230" viewBox="0 0 720 230" font-family="ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, Consolas, monospace" font-size="14">
+  <!-- terminal window -->
+  <rect width="720" height="230" rx="10" fill="#1e1e2e"/>
+  <!-- title bar -->
+  <rect width="720" height="34" rx="10" fill="#181825"/>
+  <rect y="24" width="720" height="10" fill="#181825"/>
+  <circle cx="22" cy="17" r="6" fill="#f38ba8"/>
+  <circle cx="42" cy="17" r="6" fill="#f9e2af"/>
+  <circle cx="62" cy="17" r="6" fill="#a6e3a1"/>
+  <text x="360" y="22" text-anchor="middle" fill="#6c7086" font-size="12">vacation-photos</text>
+
+  <!-- session -->
+  <text x="20" y="64" fill="#a6e3a1">$</text>
+  <text x="36" y="64" fill="#cdd6f4">heic_converter_mt -q 90</text>
+
+  <text x="20" y="94" fill="#cdd6f4">Found <tspan fill="#89b4fa">218</tspan> HEIC files. Converting with quality <tspan fill="#89b4fa">90</tspan> using <tspan fill="#89b4fa">8</tspan> threads...</text>
+  <text x="20" y="124" fill="#cdd6f4">Done. Converted OK: <tspan fill="#a6e3a1">218</tspan>, Failed: <tspan fill="#cdd6f4">0</tspan></text>
+
+  <text x="20" y="164" fill="#a6e3a1">$</text>
+  <text x="36" y="164" fill="#cdd6f4">ls output</text>
+  <text x="20" y="194" fill="#94e2d5">IMG_4501.jpg  IMG_4502.jpg  IMG_4503.jpg  IMG_4504.jpg  ...</text>
+</svg>
