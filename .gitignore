@@ -1,0 +1,15 @@
+# Input photos and converted output (keep the empty folders via .gitkeep)
+Photos/*
+!Photos/.gitkeep
+output/*
+!output/.gitkeep
+
+# Built binaries
+heic_converter
+heic_converter.exe
+heic_converter_mt
+heic_converter_mt.exe
+*.o
+
+# macOS cruft
+.DS_Store
