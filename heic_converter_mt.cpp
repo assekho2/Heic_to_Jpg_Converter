@@ -1,11 +1,20 @@
 /*
-Build (Apple Silicon / Homebrew):
-g++ -std=c++17 -O2 -pthread -o heic_converter_mt heic_converter_mt.cpp \
-  -I/opt/homebrew/include \
-  -L/opt/homebrew/lib \
-  -L/opt/homebrew/opt/jpeg/lib \
-  -I/opt/homebrew/opt/jpeg/include \
-  -lheif -ljpeg
+Cross-platform (Windows / macOS / Linux) multithreaded HEIC -> JPEG converter.
+
+Build with the included Makefile:
+    make heic_converter_mt
+
+Or by hand:
+
+macOS (Homebrew: brew install libheif jpeg):
+    g++ -std=c++17 -O2 -pthread -o heic_converter_mt heic_converter_mt.cpp \
+      -I/opt/homebrew/include -L/opt/homebrew/lib \
+      -I/opt/homebrew/opt/jpeg/include -L/opt/homebrew/opt/jpeg/lib \
+      -lheif -ljpeg
+
+Windows (MSYS2 MinGW-w64 shell, after
+         pacman -S mingw-w64-ucrt-x86_64-libheif mingw-w64-ucrt-x86_64-libjpeg-turbo):
+    g++ -std=c++17 -O2 -pthread -o heic_converter_mt.exe heic_converter_mt.cpp -lheif -ljpeg
 
 Run examples:
   ./heic_converter_mt                          # defaults: Photos -> output, quality 90, threads = hw cores
@@ -15,6 +24,7 @@ Run examples:
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <cstdint>
 #include <cctype>
 #include <cerrno>
 #include <string>
@@ -26,14 +36,33 @@ Run examples:
 #include <condition_variable>
 #include <iostream>
 
-#include <dirent.h>
 #include <sys/stat.h>
-#include <unistd.h>
 
-#include "/opt/homebrew/include/libheif/heif.h"
+#ifdef _WIN32
+    #define WIN32_LEAN_AND_MEAN
+    #ifndef NOMINMAX
+        #define NOMINMAX
+    #endif
+    #include <windows.h>
+    #include <direct.h>
+#else
+    #include <dirent.h>
+    #include <unistd.h>
+#endif
+
+#include <libheif/heif.h>
 #include <jpeglib.h>
 
-#define MAX_PATH 1024
+// MSVC's <sys/stat.h> does not provide these POSIX macros
+#if defined(_WIN32) && !defined(S_ISDIR)
+    #define S_ISDIR(m) (((m) & _S_IFMT) == _S_IFDIR)
+#endif
+#if defined(_WIN32) && !defined(S_ISREG)
+    #define S_ISREG(m) (((m) & _S_IFMT) == _S_IFREG)
+#endif
+
+// windows.h defines MAX_PATH (260), so use our own name for path buffers
+#define PATH_BUF_SIZE 1024
 
 typedef struct {
     struct heif_context* ctx;
@@ -59,10 +88,24 @@ static inline bool ends_with_heic_case_insensitive(const char* filename) {
     return (*ext == '\0' && *target == '\0');
 }
 
+// Last path component, handling both '/' and '\' separators
+static const char* path_basename(const char* path) {
+    const char* slash = std::strrchr(path, '/');
+#ifdef _WIN32
+    const char* bslash = std::strrchr(path, '\\');
+    if (!slash || (bslash && bslash > slash)) slash = bslash;
+#endif
+    return slash ? slash + 1 : path;
+}
+
 static inline bool ensure_directory(const char* path) {
     struct stat st;
     if (stat(path, &st) == 0) return S_ISDIR(st.st_mode);
+#ifdef _WIN32
+    return (_mkdir(path) == 0);
+#else
     return (mkdir(path, 0755) == 0);
+#endif
 }
 
 static void cleanup_context(ConversionContext* ctx) {
@@ -151,14 +194,13 @@ static bool convert_heic_to_jpg(const char* input_path, const char* output_dir, 
     }
 
     // Build output filename: output_dir/base_name.jpg
-    const char* base = std::strrchr(input_path, '/');
-    base = base ? base + 1 : input_path;
+    const char* base = path_basename(input_path);
 
     std::string base_name(base);
     auto dotpos = base_name.find_last_of('.');
     if (dotpos != std::string::npos) base_name.resize(dotpos);
 
-    char output_path[MAX_PATH];
+    char output_path[PATH_BUF_SIZE];
     std::snprintf(output_path, sizeof(output_path), "%s/%s.jpg", output_dir, base_name.c_str());
 
     ctx.outfile = std::fopen(output_path, "wb");
@@ -228,6 +270,29 @@ private:
 static std::vector<std::string> list_heic_files(const char* input_dir) {
     std::vector<std::string> files;
 
+#ifdef _WIN32
+    char pattern[PATH_BUF_SIZE];
+    std::snprintf(pattern, sizeof(pattern), "%s\\*", input_dir);
+
+    WIN32_FIND_DATAA find_data;
+    HANDLE find = FindFirstFileA(pattern, &find_data);
+    if (find == INVALID_HANDLE_VALUE) {
+        std::fprintf(stderr, "Could not open input directory '%s' (error %lu)\n",
+                     input_dir, GetLastError());
+        return files;
+    }
+
+    do {
+        if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) continue;
+        if (!ends_with_heic_case_insensitive(find_data.cFileName)) continue;
+
+        char fullpath[PATH_BUF_SIZE];
+        std::snprintf(fullpath, sizeof(fullpath), "%s/%s", input_dir, find_data.cFileName);
+        files.emplace_back(fullpath);
+    } while (FindNextFileA(find, &find_data));
+
+    FindClose(find);
+#else
     DIR* dir = opendir(input_dir);
     if (!dir) {
         std::fprintf(stderr, "Could not open input directory '%s': %s\n", input_dir, std::strerror(errno));
@@ -238,7 +303,7 @@ static std::vector<std::string> list_heic_files(const char* input_dir) {
     while ((entry = readdir(dir)) != nullptr) {
         if (!ends_with_heic_case_insensitive(entry->d_name)) continue;
 
-        char fullpath[MAX_PATH];
+        char fullpath[PATH_BUF_SIZE];
         std::snprintf(fullpath, sizeof(fullpath), "%s/%s", input_dir, entry->d_name);
 
         // Skip non-regular files
@@ -250,6 +315,8 @@ static std::vector<std::string> list_heic_files(const char* input_dir) {
     }
 
     closedir(dir);
+#endif
+
     return files;
 }
 
@@ -310,7 +377,7 @@ int main(int argc, char** argv) {
             if (ok) converted_ok.fetch_add(1, std::memory_order_relaxed);
             else converted_fail.fetch_add(1, std::memory_order_relaxed);
 
-            
+
             //int done = converted_ok.load(std::memory_order_relaxed) + converted_fail.load(std::memory_order_relaxed);
             //if ((done % 25) == 0) {
             //    std::lock_guard<std::mutex> lk(print_mtx);
