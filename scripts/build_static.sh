@@ -54,8 +54,8 @@ cmake_build() { # cmake_build <src-dir> [extra cmake args...]
         -DBUILD_SHARED_LIBS=OFF \
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
         -DCMAKE_INSTALL_PREFIX="$PREFIX" \
-        "$@" >/dev/null
-    cmake --build "$src/build" >/dev/null
+        "$@"
+    cmake --build "$src/build"
     cmake --install "$src/build" >/dev/null
 }
 

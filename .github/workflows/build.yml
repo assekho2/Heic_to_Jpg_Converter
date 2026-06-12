@@ -45,10 +45,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # Intel (x86_64) needs GitHub's retired macos-13 runner; if Intel
+          # support is wanted later, cross-compile from the arm64 runner.
           - runner: macos-14
             arch: arm64
-          - runner: macos-13
-            arch: x86_64
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
