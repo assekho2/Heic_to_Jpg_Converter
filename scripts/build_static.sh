@@ -67,12 +67,14 @@ if [ "$PLATFORM" = macos ] && [ ! -f "$PREFIX/lib/libde265.a" ]; then
 fi
 
 # ---- libjpeg ----
+JPEG_INCLUDE=""
 if [ "$PLATFORM" = windows ]; then
     JPEG_LINK="-ljpeg"   # pacman's mingw-w64-ucrt-x86_64-libjpeg-turbo ships libjpeg.a
 else
     BREW_JT="$(brew --prefix jpeg-turbo 2>/dev/null || true)"
     if [ -n "$BREW_JT" ] && [ -f "$BREW_JT/lib/libjpeg.a" ]; then
         JPEG_LINK="$BREW_JT/lib/libjpeg.a"
+        JPEG_INCLUDE="-I$BREW_JT/include"   # jpeg-turbo is keg-only; not on default path
     else
         # Fallback: build from source. SIMD is disabled to avoid requiring nasm;
         # install jpeg-turbo via brew if you want the faster SIMD build.
@@ -124,7 +126,7 @@ if [ "$PLATFORM" = windows ]; then
 else
     g++ -std=c++17 -O2 -Wall -pthread \
         -o "$ROOT/heic_converter_mt" "$ROOT/heic_converter_mt.cpp" \
-        -I"$PREFIX/include" \
+        -I"$PREFIX/include" $JPEG_INCLUDE \
         "$PREFIX/lib/libheif.a" "$PREFIX/lib/libde265.a" $JPEG_LINK -lz
     echo "== Built heic_converter_mt; dynamic dependencies:"
     otool -L "$ROOT/heic_converter_mt"
