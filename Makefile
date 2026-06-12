@@ -10,9 +10,11 @@
 #   Linux:    sudo apt install build-essential libheif-dev libjpeg-dev
 #
 # Targets:
-#   make                    build both converters
+#   make                    build both converters (dynamic linking)
 #   make heic_converter     single-threaded C version
 #   make heic_converter_mt  multithreaded C++ version
+#   make static             portable heic_converter_mt with statically linked
+#                           libheif/libde265/libjpeg (see scripts/build_static.sh)
 #   make clean              remove built binaries
 
 CC  := gcc
@@ -60,7 +62,11 @@ heic_converter$(EXE): heic_converter.c
 heic_converter_mt$(EXE): heic_converter_mt.cpp
 	$(CXX) $(CXXFLAGS) $(THREADFLAGS) $(INCLUDES) -o $@ $< $(LIBPATHS) $(LDLIBS)
 
+static:
+	./scripts/build_static.sh
+
 clean:
 	rm -f heic_converter heic_converter.exe heic_converter_mt heic_converter_mt.exe
+	rm -rf build
 
-.PHONY: all clean
+.PHONY: all static clean
