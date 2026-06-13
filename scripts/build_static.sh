@@ -118,16 +118,14 @@ echo "== Linking heic_converter_mt"
 if [ "$PLATFORM" = windows ]; then
     # LIBHEIF_STATIC_BUILD stops heif.h from declaring dllimport symbols
     g++ -std=c++17 -O2 -Wall -pthread -static -DLIBHEIF_STATIC_BUILD=1 \
-        -o "$ROOT/heic_converter_mt.exe" \
-        "$ROOT/heic_converter_mt.cpp" "$ROOT/converter_core.cpp" \
+        -o "$ROOT/heic_converter_mt.exe" "$ROOT/heic_converter_mt.cpp" \
         -I"$PREFIX/include" -L"$PREFIX/lib" \
         -lheif -lde265 $JPEG_LINK -lz
     echo "== Built heic_converter_mt.exe; dynamic dependencies:"
     ldd "$ROOT/heic_converter_mt.exe" || true
 else
     g++ -std=c++17 -O2 -Wall -pthread \
-        -o "$ROOT/heic_converter_mt" \
-        "$ROOT/heic_converter_mt.cpp" "$ROOT/converter_core.cpp" \
+        -o "$ROOT/heic_converter_mt" "$ROOT/heic_converter_mt.cpp" \
         -I"$PREFIX/include" $JPEG_INCLUDE \
         "$PREFIX/lib/libheif.a" "$PREFIX/lib/libde265.a" $JPEG_LINK -lz
     echo "== Built heic_converter_mt; dynamic dependencies:"

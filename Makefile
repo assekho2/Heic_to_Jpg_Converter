@@ -59,8 +59,8 @@ all: $(TARGETS)
 heic_converter$(EXE): heic_converter.c
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $< $(LIBPATHS) $(LDLIBS)
 
-heic_converter_mt$(EXE): heic_converter_mt.cpp converter_core.cpp converter_core.h
-	$(CXX) $(CXXFLAGS) $(THREADFLAGS) $(INCLUDES) -o $@ heic_converter_mt.cpp converter_core.cpp $(LIBPATHS) $(LDLIBS)
+heic_converter_mt$(EXE): heic_converter_mt.cpp
+	$(CXX) $(CXXFLAGS) $(THREADFLAGS) $(INCLUDES) -o $@ $< $(LIBPATHS) $(LDLIBS)
 
 static:
 	./scripts/build_static.sh

@@ -12,8 +12,6 @@ heic_converter
 heic_converter.exe
 heic_converter_mt
 heic_converter_mt.exe
-heic_converter_gui
-heic_converter_gui.exe
 *.o
 
 # macOS cruft
