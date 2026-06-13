@@ -79,11 +79,27 @@ jobs:
 
       - name: Package artifacts
         run: |
-          (cd heic_converter_mt-windows-x64 && zip ../heic_converter_mt-windows-x64.zip heic_converter_mt.exe)
+          # Each archive contains a single "HEIC-to-JPG-Converter" folder
+          # holding the binary, an empty "photos to convert" folder for the
+          # user to drop photos into, and a readme.txt with instructions.
+          folder="HEIC-to-JPG-Converter"
+
+          # Windows
+          win="heic_converter_mt-windows-x64"
+          mkdir -p "$win/$folder/photos to convert"
+          mv "$win/heic_converter_mt.exe" "$win/$folder/"
+          cp packaging/README-windows.txt "$win/$folder/readme.txt"
+          (cd "$win" && zip -r "../$win.zip" "$folder")
+
+          # macOS
           for arch in arm64 x86_64; do
-            if [ -d "heic_converter_mt-macos-$arch" ]; then
-              chmod +x "heic_converter_mt-macos-$arch/heic_converter_mt"
-              tar -czf "heic_converter_mt-macos-$arch.tar.gz" -C "heic_converter_mt-macos-$arch" heic_converter_mt
+            src="heic_converter_mt-macos-$arch"
+            if [ -d "$src" ]; then
+              mkdir -p "$src/$folder/photos to convert"
+              chmod +x "$src/heic_converter_mt"
+              mv "$src/heic_converter_mt" "$src/$folder/"
+              cp packaging/README-macos.txt "$src/$folder/readme.txt"
+              tar -czf "$src.tar.gz" -C "$src" "$folder"
             fi
           done
 
