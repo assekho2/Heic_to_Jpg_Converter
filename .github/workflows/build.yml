@@ -75,6 +75,8 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v4   # needed for the packaging/ templates and launchers
+
       - uses: actions/download-artifact@v4
 
       - name: Package artifacts
