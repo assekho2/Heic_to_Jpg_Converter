@@ -4,12 +4,27 @@ HEIC to JPG Converter (macOS)
 This tool converts Apple HEIC photos (.heic) into standard JPG images.
 
 
-HOW TO USE
-----------
+HOW TO USE (easiest)
+--------------------
 
 1. Put the .heic photos you want to convert into the "photos to convert"
    folder. It is in this same folder, right next to the heic_converter_mt
    program.
+
+2. Double-click "Convert.command".
+
+   The first time, macOS may say it "cannot verify the developer". If so,
+   right-click "Convert.command", choose "Open", then click "Open" in the
+   dialog. You only need to do this once.
+
+3. The converted .jpg images appear in a new "output" folder created here.
+   That's it!
+
+
+HOW TO USE (from a terminal, if you prefer)
+-------------------------------------------
+
+1. Put your .heic photos into the "photos to convert" folder.
 
 2. Open the Terminal app in this folder (in Finder, right-click this folder
    and choose Services > "New Terminal at Folder", or drag the folder onto
@@ -24,8 +39,7 @@ HOW TO USE
 
        ./heic_converter_mt "photos to convert"
 
-5. The converted .jpg images appear in a new "output" folder created here.
-   That's it!
+5. The converted .jpg images appear in a new "output" folder.
 
 
 OPTIONS (optional)

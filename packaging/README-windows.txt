@@ -4,11 +4,24 @@ HEIC to JPG Converter (Windows)
 This tool converts Apple HEIC photos (.heic) into standard JPG images.
 
 
-HOW TO USE
-----------
+HOW TO USE (easiest)
+--------------------
 
 1. Put the .heic photos you want to convert into the "photos to convert"
    folder. It is in this same folder, right next to heic_converter_mt.exe.
+
+2. Double-click "Convert.bat".
+
+3. The converted .jpg images appear in a new "output" folder created here.
+   That's it!
+
+(If Windows shows a blue "Windows protected your PC" box, see the note below.)
+
+
+HOW TO USE (from a terminal, if you prefer)
+-------------------------------------------
+
+1. Put your .heic photos into the "photos to convert" folder.
 
 2. Open this folder in File Explorer, click the address bar, type:
 
@@ -20,8 +33,7 @@ HOW TO USE
 
        heic_converter_mt.exe "photos to convert"
 
-4. The converted .jpg images appear in a new "output" folder created here.
-   That's it!
+4. The converted .jpg images appear in a new "output" folder.
 
 
 NOTE: "Windows protected your PC"

@@ -15,34 +15,27 @@ Grab the latest release from the [**Releases page**](https://github.com/assekho2
 
 ## Quick start
 
-Each download unzips to a `HEIC-to-JPG-Converter` folder containing the program, a `photos to convert` folder, and a `readme.txt`.
+Each download unzips to a `HEIC-to-JPG-Converter` folder containing the program, a `photos to convert` folder, a double-click launcher, and a `readme.txt`.
 
 ### Windows
 
 1. Unzip the download. Open the `HEIC-to-JPG-Converter` folder.
 2. Drop your `.heic` photos into the `photos to convert` folder.
-3. Click the Explorer address bar, type `cmd`, and press Enter (opens a terminal in that folder). Then run:
-
-   ```
-   heic_converter_mt.exe "photos to convert"
-   ```
-
-   JPEGs appear in a new `output` subfolder.
+3. Double-click **`Convert.bat`**. JPEGs appear in a new `output` subfolder.
 
 > **"Windows protected your PC"?** SmartScreen warns about unsigned downloads. Click **More info → Run anyway**.
+
+Prefer a terminal? Type `cmd` in the Explorer address bar and run `heic_converter_mt.exe "photos to convert"`.
 
 ### macOS
 
 1. Unzip the download (double-click the `.tar.gz`). Open the `HEIC-to-JPG-Converter` folder.
 2. Drop your `.heic` photos into the `photos to convert` folder.
-3. Open Terminal in that folder, then run:
+3. Double-click **`Convert.command`**. JPEGs appear in a new `output` subfolder.
 
-   ```bash
-   xattr -d com.apple.quarantine ./heic_converter_mt   # first run only: allow the unsigned binary
-   ./heic_converter_mt "photos to convert"
-   ```
+   First run only: macOS may block the unsigned launcher — right-click `Convert.command`, choose **Open**, then **Open** again.
 
-   JPEGs appear in a new `output` subfolder.
+Prefer a terminal? Run `xattr -d com.apple.quarantine ./heic_converter_mt` once, then `./heic_converter_mt "photos to convert"`.
 
 Full instructions are also in the `readme.txt` inside each download.
 
