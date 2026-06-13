@@ -21,6 +21,7 @@ jobs:
           msystem: UCRT64
           update: true
           install: >-
+            git
             mingw-w64-ucrt-x86_64-gcc
             mingw-w64-ucrt-x86_64-cmake
             mingw-w64-ucrt-x86_64-ninja
@@ -38,6 +39,16 @@ jobs:
         with:
           name: heic_converter_mt-windows-x64
           path: heic_converter_mt.exe
+
+      - name: Build GUI app
+        run: |
+          cmake -S . -B build/gui -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build/gui
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: heic_converter_gui-windows-x64
+          path: build/gui/heic_converter_gui.exe
 
   macos:
     name: macOS ${{ matrix.arch }}
@@ -66,6 +77,16 @@ jobs:
         with:
           name: heic_converter_mt-macos-${{ matrix.arch }}
           path: heic_converter_mt
+
+      - name: Build GUI app
+        run: |
+          cmake -S . -B build/gui -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
+          cmake --build build/gui
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: heic_converter_gui-macos-${{ matrix.arch }}
+          path: build/gui/heic_converter_gui
 
   release:
     name: Attach binaries to release
@@ -108,8 +129,22 @@ jobs:
             fi
           done
 
+          # --- GUI app: a single self-contained binary, packaged as-is ---
+          if [ -d heic_converter_gui-windows-x64 ]; then
+            (cd heic_converter_gui-windows-x64 && zip "../heic_converter_gui-windows-x64.zip" heic_converter_gui.exe)
+          fi
+          for arch in arm64 x86_64; do
+            gsrc="heic_converter_gui-macos-$arch"
+            if [ -d "$gsrc" ]; then
+              chmod +x "$gsrc/heic_converter_gui"
+              tar -czf "$gsrc.tar.gz" -C "$gsrc" heic_converter_gui
+            fi
+          done
+
       - uses: softprops/action-gh-release@v2
         with:
           files: |
             heic_converter_mt-windows-x64.zip
             heic_converter_mt-macos-*.tar.gz
+            heic_converter_gui-windows-x64.zip
+            heic_converter_gui-macos-*.tar.gz
